@@ -215,7 +215,7 @@ class QtHub(BaseHub):
     def _foreToQuitApplication(self):
         gc.collect()
         if self._countManagedGreenlets() > 0:
-            logger.warning("尚有%s个greenlet未退出。强制退出Qt事件循环", len(self.greenlets))
+            logger.warning("%d greenlets left. Force hub to quit immediately.", len(self.greenlets))
         QCoreApplication.instance().quit()
 
     def _addManagedGreenlets(self, greenlet):
@@ -276,7 +276,6 @@ def _killall_helper(greenlets):
     gc.collect()
 
 class GreenletGroup:
-    #TODO 让GreenletGroup在非Qt环境下也可以使用。
     def __init__(self):
         self.greenlets = []
 
