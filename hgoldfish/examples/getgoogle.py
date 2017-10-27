@@ -17,15 +17,25 @@ class TestWidget(QTextBrowser):
     def __init__(self):
         QTextBrowser.__init__(self)
         self.operations = eventlet.GreenletGroup()
+        self.setPlainText("click middle button to navigate www.163.com")
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MidButton:
             self.operations.spawn(self.getpage)
+            self.operations.spawnWithName("print_number", self.printNumbers)
         QTextBrowser.mousePressEvent(self, event)
+
+    def printNumbers(self):
+        i = 0
+        while True:
+            eventlet.sleep(0.1)
+            i += 1
+            self.append(str(i))
 
     def getpage(self):
         page = urlopen("http://www.163.com/").read().decode("gbk", "replace")
-        self.setHtml(page)
+        self.setPlainText(page)
+        self.operations.kill("print_number")
 
 if __name__ == "__main__":
     app = QApplication([])
