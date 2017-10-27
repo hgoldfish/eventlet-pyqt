@@ -81,7 +81,7 @@ except ImportError:
     from PyQt5.QtCore import Qt, QSocketNotifier, QTimer, \
         QCoreApplication, QObject, pyqtSlot, QMetaObject, Q_ARG
 from eventlet import spawn, sleep, spawn_after, kill, Timeout, with_timeout, GreenPool, \
-        GreenPile, Queue, import_patched, connect, listen, getcurrent
+        GreenPile, Queue, import_patched, connect, listen, getcurrent, monkey_patch
 from eventlet.hubs import use_hub, get_hub
 from eventlet.hubs.hub import BaseHub
 from eventlet.support import greenlets as greenlet, clear_sys_exc_info
@@ -95,7 +95,7 @@ __all__ = ["GreenletGroup", "runInNewThread", "start_application", "stop_applica
         "SystemExceptions", "scheduleCall", "exc_clear", "runLocalLoop", "runDialog"\
         "callMethodInEventLoop", "spawnInGreenlet"]
 __all__ += ["sleep", "spawn", "spawn_after", "kill", "Timeout", "with_timeout", \
-        "GreenPool", "GreenPile", "Queue", "import_patched", \
+        "GreenPool", "GreenPile", "Queue", "import_patched", "monkey_patch"\
         "connect", "listen", "getcurrent", "GreenletExit", "Event", "socket", "Semaphore"] #from eventlet
 
 GreenletExit = greenlet.GreenletExit
