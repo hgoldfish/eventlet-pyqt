@@ -1,8 +1,17 @@
 import logging; logging.basicConfig(level = logging.DEBUG)
 from hgoldfish.utils import eventlet
-from eventlet.green import urllib
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QApplication, QTextBrowser
+try:
+    from eventlet.green.urllib import urlopen
+except ImportError:  # py3k
+    from eventlet.green.urllib.request import urlopen
+
+try:
+    from PyQt4.QtCore import Qt
+    from PyQt4.QtGui import QApplication, QTextBrowser
+except ImportError:
+    from PyQt5.QtCore import Qt
+    from PyQt5.QtGui import QApplication, QTextBrowser
+
 
 class TestWidget(QTextBrowser):
     def __init__(self):
@@ -15,10 +24,11 @@ class TestWidget(QTextBrowser):
         QTextBrowser.mousePressEvent(self, event)
 
     def getpage(self):
-        page = urllib.urlopen("http://code.google.com/p/eventlet-pyqt/").read().decode("utf-8")
+        page = urlopen("http://www.163.com/").read().decode("gbk", "replace")
         self.setHtml(page)
 
-app = QApplication([])
-w = TestWidget()
-w.show()
-eventlet.start_application(quitOnLastWindowClosed = True)
+if __name__ == "__main__":
+    app = QApplication([])
+    w = TestWidget()
+    w.show()
+    eventlet.start_application(quitOnLastWindowClosed = True)

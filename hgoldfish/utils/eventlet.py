@@ -73,8 +73,12 @@ The GreenletGroup manages greenlets. It has several methods you may like.
   Kill all managed greenlets.
 
 """
-import sys, logging, functools, inspect, weakref, gc, heapq, threading
-from PyQt4.QtCore import Qt, QSocketNotifier, QTimer, \
+import sys, logging, functools, inspect, weakref, gc, heapq, threading, traceback
+try:
+    from PyQt4.QtCore import Qt, QSocketNotifier, QTimer, \
+        QCoreApplication, QObject, pyqtSlot, QMetaObject, Q_ARG
+except ImportError:
+    from PyQt5.QtCore import Qt, QSocketNotifier, QTimer, \
         QCoreApplication, QObject, pyqtSlot, QMetaObject, Q_ARG
 from eventlet import spawn, sleep, spawn_after, kill, Timeout, with_timeout, GreenPool, \
         GreenPile, Queue, import_patched, connect, listen, getcurrent
@@ -95,8 +99,11 @@ __all__ += ["sleep", "spawn", "spawn_after", "kill", "Timeout", "with_timeout", 
         "connect", "listen", "getcurrent", "GreenletExit", "Event", "socket", "Semaphore"] #from eventlet
 
 GreenletExit = greenlet.GreenletExit
-
-SystemExceptions = (GreenletExit, SystemExit, weakref.ReferenceError)
+try:
+    ReferenceError
+except NameError:
+    ReferenceError = weakref.ReferenceError
+SystemExceptions = (GreenletExit, SystemExit, ReferenceError)
 
 exc_clear = clear_sys_exc_info
 
@@ -134,10 +141,12 @@ def callMethodInEventLoop(func, *args, **kwargs):
     return done.wait()
 
 class QtListener:
-    def __init__(self, evtype, fileno, cb):
+    def __init__(self, evtype, fileno, cb, tb = None, mark_as_closed = False):
         self.evtype, self.fileno, self.cb = evtype, fileno, cb
+        self.tb, self.mark_as_closed = tb, mark_as_closed
         self.notifier = QSocketNotifier(fileno, self.eventType(evtype))
         self.notifier.activated.connect(cb)
+        self.spent = False
 
     def __del__(self):
         self.notifier.setEnabled(False)
@@ -149,6 +158,13 @@ class QtListener:
             return QSocketNotifier.Read
         elif evtype == BaseHub.WRITE:
             return QSocketNotifier.Write
+
+    def defang(self):
+        self.notifier.activated.disconnected(self.cb)
+        if self.mark_as_closed is not None:
+            self.mark_as_closed()
+        self.spent = True
+
 
 class QtHub(BaseHub):
     READ = BaseHub.READ
@@ -190,6 +206,7 @@ class QtHub(BaseHub):
             try:
                 timer()
             except:
+                traceback.print_exc()
                 clear_sys_exc_info()
         timer._impl = QTimer()
         timer._impl.setSingleShot(True)
@@ -332,7 +349,7 @@ class GreenletGroup:
             def wrapper_bound():
                 try:
                     func(func_self, *args, **kwargs)
-                except (GreenletExit, weakref.ReferenceError):
+                except (GreenletExit, ReferenceError):
                     clear_sys_exc_info()
                 except:
                     logger.exception("an unexpected exception occured.")
@@ -374,7 +391,7 @@ class GreenletGroup:
             def wrapper():
                 try:
                     func(**v)
-                except (GreenletExit, weakref.ReferenceError):
+                except (GreenletExit, ReferenceError):
                     clear_sys_exc_info()
                 except:
                     logger.exception("an unexpected exception occured.")

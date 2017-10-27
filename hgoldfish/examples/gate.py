@@ -1,7 +1,10 @@
 from __future__ import print_function
 
 from hgoldfish.utils import eventlet
-from PyQt4.QtCore import QCoreApplication
+try:
+    from PyQt4.QtCore import QCoreApplication
+except ImportError:
+    from PyQt5.QtCore import QCoreApplication
 
 class DependsOnCurrentPosition:
     def __init__(self):
