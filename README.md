@@ -1,3 +1,6 @@
+### Detailed tutorial(Chinese)
+[https://hgoldfish.com/blogs/article/85/](https://hgoldfish.com/blogs/article/85/)
+
 Integrate eventlet with Qt's eventloop.
 It is very simple to use:
 
