@@ -7,7 +7,7 @@ try:
     from PyQt4.QtGui import QApplication, QTextBrowser
 except ImportError:
     from PyQt5.QtCore import Qt
-    from PyQt5.QtGui import QApplication, QTextBrowser
+    from PyQt5.QtWidgets import QApplication, QTextBrowser
 
 
 class TestWidget(QTextBrowser):
