@@ -194,7 +194,7 @@ class QtHub(BaseHub):
             QCoreApplication.instance().quit()
         else:
             logger.warning("Wait for %s greenlets to terminate.", aliveGreenlets)
-            QTimer.singleShot(1000, self._foreToQuitApplication)
+            QTimer.singleShot(1000, self._forceToQuitApplication)
         if wait:
             assert self.greenlet is not greenlet.getcurrent(), \
                     "Can't abort with wait from inside the hub's greenlet."
@@ -229,7 +229,7 @@ class QtHub(BaseHub):
         except ValueError:
             pass
 
-    def _foreToQuitApplication(self):
+    def _forceToQuitApplication(self):
         gc.collect()
         if self._countManagedGreenlets() > 0:
             logger.warning("%d greenlets left. Force hub to quit immediately.", len(self.greenlets))
